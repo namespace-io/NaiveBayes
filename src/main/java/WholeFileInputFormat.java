@@ -6,9 +6,10 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-
 import java.io.IOException;
 
+
+// 计算先验概率的自定义的InputFormat, 将整个文件作为输入
 public class WholeFileInputFormat extends FileInputFormat<Text, IntWritable> {
     @Override
     protected boolean isSplitable(JobContext context, Path filename) {

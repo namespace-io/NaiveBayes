@@ -26,7 +26,7 @@ public class Prediction extends Configured implements Tool {
     private static Hashtable<Pair<String, String>, Double> Cond = new Hashtable<Pair<String, String>, Double>();
     private static Hashtable<String, Integer> TotalWordInClass = new Hashtable<String, Integer>();
     private static final Log LOG = LogFactory.getLog(Prediction.class);
-    private static int allwords;
+
     public static class PredictionMapper extends Mapper<Text, Text, Text, MapWritable>{
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
@@ -74,7 +74,7 @@ public class Prediction extends Configured implements Tool {
                 word = arrs[1];
                 counter = Integer.parseInt(arrs[2]);
 
-                allwords += counter;
+
                 if (TotalWordInClass.containsKey(classname)){
                     num = TotalWordInClass.get(classname);
                     TotalWordInClass.put(classname, num + counter);
@@ -106,9 +106,9 @@ public class Prediction extends Configured implements Tool {
                 MapWritable mw = new MapWritable();
                 p.set(ProbabilityForClass(content, cn));
                 classname.set(cn);
-                LOG.info("MAP : 概率 = " + p.toString() + ", classname = " + classname + ", docID = " + docID.toString());
+//                LOG.info("MAP : 概率 = " + p.toString() + ", classname = " + classname + ", docID = " + docID.toString());
                 mw.put(classname, p);
-                LOG.info("MAP mw : " + mw.toString());
+//                LOG.info("MAP mw : " + mw.toString());
                 context.write(docID, mw);
             }
         }
@@ -139,6 +139,7 @@ public class Prediction extends Configured implements Tool {
         String[] words = content.split("\\s+");
         Pair<String, String> cw;
         double p = 0.0;
+        // 拉普拉斯平滑
         for (String word : words) {
             cw = new Pair<String, String>(classname, word);
             if (Cond.containsKey(cw)) {
@@ -174,6 +175,7 @@ public class Prediction extends Configured implements Tool {
         job.setReducerClass(PredictionReducer.class);
 
 
+        //因为Map和Reduce的输出不一样所以要分开设置
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
         job.setMapOutputKeyClass(Text.class);

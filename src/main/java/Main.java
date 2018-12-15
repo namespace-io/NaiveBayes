@@ -14,11 +14,11 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
 
-//        PrioriProbability priori = new PrioriProbability();
-//        ToolRunner.run(conf, priori, args);
-//
-//        ConditionalProbability cond = new ConditionalProbability();
-//        ToolRunner.run(conf, cond, args);
+        PrioriProbability priori = new PrioriProbability();
+        ToolRunner.run(conf, priori, args);
+
+        ConditionalProbability cond = new ConditionalProbability();
+        ToolRunner.run(conf, cond, args);
 
         Prediction pred = new Prediction();
         ToolRunner.run(conf, pred, args);

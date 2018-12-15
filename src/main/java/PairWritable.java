@@ -1,4 +1,3 @@
-import javafx.scene.shape.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
@@ -6,6 +5,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+
+// 因为我们使用<classname, word>作为键, 内置的MapWritable只实现了Writable接口不能作为键,
+// 所以必须自定义PairWritable实现WritableComparable接口
 public class PairWritable implements WritableComparable<PairWritable> {
     private Text classname;
     private Text word;
