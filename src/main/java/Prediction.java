@@ -18,6 +18,7 @@ import org.apache.hadoop.util.ToolRunner;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 
@@ -26,6 +27,7 @@ public class Prediction extends Configured implements Tool {
     private static Hashtable<Pair<String, String>, Double> Cond = new Hashtable<Pair<String, String>, Double>();
     private static Hashtable<String, Integer> TotalWordInClass = new Hashtable<String, Integer>();
     private static final Log LOG = LogFactory.getLog(Prediction.class);
+    private static HashSet<String> WordSet = new HashSet<String>();
 
     public static class PredictionMapper extends Mapper<Text, Text, Text, MapWritable>{
         @Override
@@ -74,6 +76,7 @@ public class Prediction extends Configured implements Tool {
                 word = arrs[1];
                 counter = Integer.parseInt(arrs[2]);
 
+                WordSet.add(word);
 
                 if (TotalWordInClass.containsKey(classname)){
                     num = TotalWordInClass.get(classname);
@@ -90,8 +93,9 @@ public class Prediction extends Configured implements Tool {
                 }
             }
 
+            // 拉普拉斯平滑
             for (Pair<String, String> pair : Cond.keySet()) {
-                Cond.put(pair, (1 + Cond.get(pair)) / (TotalWordInClass.get(pair.getKey()) +  Priori.keySet().size() ) );
+                Cond.put(pair, (1 + Cond.get(pair)) / (TotalWordInClass.get(pair.getKey()) +  WordSet.size()) );
             }
             super.setup(context);
         }
@@ -101,7 +105,7 @@ public class Prediction extends Configured implements Tool {
             Text classname = new Text();
             String content = value.toString();
 
-            LOG.info("KeySet = " + Priori.keySet().toString());
+//            LOG.info("KeySet = " + Priori.keySet().toString());
             for (String cn : Priori.keySet()){
                 MapWritable mw = new MapWritable();
                 p.set(ProbabilityForClass(content, cn));
@@ -130,7 +134,7 @@ public class Prediction extends Configured implements Tool {
                 }
             }
 
-            LOG.info("REDUCE: " + docID.toString() + " 最大概率= " + maxP + " 类名: " + predClass.toString());
+//            LOG.info("REDUCE: " + docID.toString() + " 最大概率= " + maxP + " 类名: " + predClass.toString());
             context.write(docID, predClass);
         }
     }
@@ -145,7 +149,7 @@ public class Prediction extends Configured implements Tool {
             if (Cond.containsKey(cw)) {
                 p += Math.log10(Cond.get(cw));
             } else {
-                p += Math.log10(1.0 / (TotalWordInClass.get(classname) + Priori.keySet().size()));
+                p += Math.log10(1.0 / (TotalWordInClass.get(classname) + WordSet.size()));
             }
 
         }
